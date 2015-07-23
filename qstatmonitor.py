@@ -6,7 +6,7 @@ class QStatMonitor:
     def __init__(self):
         self._update_command = "qstat"
         self.status = collections.defaultdict(dict)
-        self.state = None
+        self.state = {}
         self.isDone = False
 
     def _update_qstat(self):
@@ -15,6 +15,7 @@ class QStatMonitor:
                              stdout=subprocess.PIPE)
         output = p.stdout.read().split('\n')
         if output[0] == '':
+            self.status = {}
             self.isDone = True
         else:
             output.pop(-1) # remove trailing
@@ -33,6 +34,11 @@ class QStatMonitor:
         self.state = collections.Counter(all_state)
 
     def update(self):
-        assert not self.isDone, "Jobs already done."
+        #assert not self.isDone, "Jobs already done."
         self._update_qstat()
         self._update_current_state()
+
+    @property
+    def num_jobs(self):
+        self.update()
+        return sum(self.state.values())
